@@ -45,8 +45,8 @@ class SocialPostSearch extends SocialPost {
             'query' => $query,
         ]);
 
-        if (\Yii::$app->getRequest()->get("id"))
-            $query->andWhere(["SocialNetwork" => \Yii::$app->getRequest()->get("id")]);
+        if (\Yii::$app->getRequest()->get("SocialNetwork"))
+            $query->andWhere(["SocialNetwork" => \Yii::$app->getRequest()->get("SocialNetwork")]);
 
         $this->load($params);
 

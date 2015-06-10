@@ -50,7 +50,7 @@ class Module extends BaseModule implements BootstrapInterface {
 
 				$navigation[] = [
 					'label' => $socialLabel,
-					'url' => "/mata-cms/social/social/list?id=$socialId",
+					'url' => "/mata-cms/social/social/list?SocialNetwork=$socialId",
 					'icon' => "/images/module-icon.svg"
 				];
 			}

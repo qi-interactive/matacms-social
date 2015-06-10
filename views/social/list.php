@@ -25,18 +25,7 @@ $isRearrangable = isset($this->context->actions()['rearrange']);
 <div class="content-block-index">
     <div class="content-block-top-bar">
         <div class="row">
-            <div class="btns-container">
-                <?php if($isRearrangable): ?>
-                    <div class="rearrangeable-btn-container elements">
-                        <div class="hi-icon-effect-2">
-                            <div class="hi-icon hi-icon-cog rearrangeable-trigger-btn" data-url="<?= \Yii::$app->controller->getRearrangeableUrl() ?>"></div>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-
-            </div>
+            <div class="btns-container"></div>
             <div class="search-container"> 
                 <div class="search-input-container">
                     <input class="search-input" id="item-search" placeholder="Type to search" value="" name="search">
@@ -101,11 +90,6 @@ Pjax::end();
 ?>
 
 <?php 
-if ($isRearrangable)
-    echo $this->render('@vendor/matacms/matacms-base/views/module/_overlay');
-?>
-
-<?php 
 
 if (count($searchModel->filterableAttributes()) > 0)
     $this->registerJs('
@@ -119,8 +103,8 @@ if (count($searchModel->filterableAttributes()) > 0)
                     "value" : value
                 });
                 reqAttrs.push({
-                    "name" : "id",
-                    "value" : "' . $socialNetworkId .'"
+                    "name" : "SocialNetwork",
+                    "value" : "' . $SocialNetwork .'"
                 });
 });
 
@@ -133,7 +117,7 @@ $.pjax.reload({container:"#w0", "url" : "?" + decodeURIComponent($.param(reqAttr
 <script>
 
     parent.mata.simpleTheme.header
-    .setText('YOU\'RE IN <?= Inflector::camel2words($this->context->module->id) ?> MODULE - <?= Inflector::camel2words($socialNetworkId) ?>')
+    .setText('YOU\'RE IN <?= Inflector::camel2words($this->context->module->id) ?> MODULE - <?= Inflector::camel2words($SocialNetwork) ?>')
     .hideBackToListView()
     .hideVersions()
     .show();
