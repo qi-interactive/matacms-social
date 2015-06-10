@@ -1,0 +1,15 @@
+{
+    "name": "matacms/matacms-social",
+    "description": "Manages social posts for MATACMS",
+    "keywords": ["yii2", "matacms-social", "social", "mata-cms", "cms"],
+    "type": "yii2-extension",
+    "license": "MIT",
+    "support": {
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "matacms\\social\\": ["../../../mata-cms/modules/matacms/matacms-social", ""]
+        }
+    }
+}

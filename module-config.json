@@ -1,0 +1,6 @@
+{
+    "name": "Social",
+    "description": "Manages social posts for MATA",
+    "icon" : "/images/module-icon.svg",
+    "version" : "1"
+}
