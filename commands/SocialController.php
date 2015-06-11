@@ -29,7 +29,7 @@ class SocialController extends Controller
 
         $socialNetworks = Setting::find()->filterWhere(['like', 'KEY', 'SOCIAL::'])->all();
         
-    	$this->stdout("Found " . count($socialNetworks) . " social networks\n\n");
+        $this->stdout("Found " . count($socialNetworks) . " social networks\n\n");
 
         if(!empty($socialNetworks)) {
             foreach($socialNetworks as $socialNetwork) {
@@ -276,7 +276,6 @@ class SocialController extends Controller
         $response = $twitter->api($request, 'GET', $reqParams);
 
         if (!empty($response)) {
-            $response = $response;
             foreach ($response as $tweet) {
                 $sc = new Social();
                 $sc->attributes = array(
@@ -291,6 +290,18 @@ class SocialController extends Controller
                 }
             }
         }
+    }
+
+    private function tweetHasHashTag($tweet, $tag) {
+        $hasHashTag = false;
+        if(isset($tweet['entities']) && isset($tweet['entities']['hashtags']) && !empty($tweet['entities']['hashtags'])) {
+            $hashTags = $tweet['entities']['hashtags'];
+            foreach($hashTags as $hashTagEntity) {
+                $hasHashTag = array_search($tag, $hashTagEntity) != false;
+            }
+        }
+
+        return $hasHashTag;
     }
 
     private function querySoundcloud($params, $settings) {
@@ -380,12 +391,23 @@ class SocialController extends Controller
             "SocialNetwork" => SocialModule::TWITTER
             ])->all();
 
+        $settings = Setting::findValue('SOCIAL::TWITTER');
+        $params = json_decode($settings);
+        $tag = isset($params->tag) ? $params->tag : null;
 
         foreach ($creeps as $creep) {
 
             $this->stdout("Processing " . $creep->Id . "\n");
 
             $response = unserialize($creep->Response);
+
+            if($tag != null && $this->tweetHasHashTag($response, $tag) == false) {
+                $creep->Processed = '2';
+                if ($creep->update() == false)
+                    throw new HttpException(500, "Could not set processed flag to 2");
+                continue;
+            }
+
             $publicationDate = strtotime($response['created_at']);
             $author = $response['user']['screen_name'];
             $publicationDate = date("Y-m-d H:i:s", $publicationDate);

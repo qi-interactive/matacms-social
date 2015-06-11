@@ -43,6 +43,10 @@ Returns all SocialPost entities without caching.
 Changelog
 ---------
 
+## 1.0.1-alpha, June 12, 2015
+
+- Added fetching user tweets with hashtag
+
 ## 1.0.0-alpha, June 10, 2015
 
 - Initial release.
