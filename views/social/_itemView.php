@@ -22,7 +22,7 @@ $module = \Yii::$app->getModule("environment");
 		<?php } else { 
 			$thumbnailActiveClass = " ";
 	} ?>
-	<a href='<?= sprintf("%s/view?id=%d", $moduleBaseUrl, $model->primaryKey );?>' class="list-link">
+	<a href='<?= sprintf("%s/view?id=%s", $moduleBaseUrl, $model->primaryKey );?>' class="list-link">
 		<div class="list-contents-container <?= $thumbnailActiveClass ?>">
 			<div class="list-label"> 
 				<span class='item-label'><?= $model->getLabel();?></span> </div>
@@ -57,7 +57,7 @@ $module = \Yii::$app->getModule("environment");
 			</div>
 		</div>
 	</a>
-	<a class='delete-btn' href="<?= sprintf("%s/delete?id=%d", $moduleBaseUrl, $model->primaryKey );?>" <?php if(method_exists($model, 'canBeDeleted')) {
+	<a class='delete-btn' href="<?= sprintf("%s/delete?id=%s", $moduleBaseUrl, $model->primaryKey );?>" <?php if(method_exists($model, 'canBeDeleted')) {
 			echo "data-delete-allowed=\"" . var_export($model->canBeDeleted(), true) . "\"";
 			if(!$model->canBeDeleted()) {
 				echo " data-delete-alert=\"" . $model->deleteAlertMessage() . "\"";
