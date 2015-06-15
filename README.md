@@ -43,6 +43,10 @@ Returns all SocialPost entities without caching.
 Changelog
 ---------
 
+## 1.0.1.2-alpha, June 15, 2015
+
+- Updated icons
+
 ## 1.0.1.1-alpha, June 12, 2015
 
 - Bugfix
