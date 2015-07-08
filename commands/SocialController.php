@@ -1,5 +1,5 @@
 <?php
- 
+
 /**
  * @link http://www.matacms.com/
  * @copyright Copyright (c) 2015 Qi Interactive Limited
@@ -28,7 +28,7 @@ class SocialController extends Controller
         $this->stdout("\nSocial Invoked\n\n", Console::FG_GREEN);
 
         $socialNetworks = Setting::find()->filterWhere(['like', 'KEY', 'SOCIAL::'])->all();
-        
+
         $this->stdout("Found " . count($socialNetworks) . " social networks\n\n");
 
         if(!empty($socialNetworks)) {
@@ -78,7 +78,7 @@ class SocialController extends Controller
 
                     $this->querySoundcloud($params, $value);
                     break;
-                    
+
                     default:
                     throw new HttpException(500, "Don't know social network " . $socialNetworkId);
                     break;
@@ -89,10 +89,10 @@ class SocialController extends Controller
             $this->processInstagram();
             $this->processTwitter();
             $this->processSoundcloud();
-        }    
+        }
     }
 
-    private function queryInstagram($params, $creepSettings) { 
+    private function queryInstagram($params, $creepSettings) {
 
         $userId = isset($params->userId) ? $params->userId : null;
         $tag = isset($params->tag) ? $params->tag : null;
@@ -105,7 +105,7 @@ class SocialController extends Controller
     }
 
 
-    private function queryInstagramByUserId($userId, $settings) { 
+    private function queryInstagramByUserId($userId, $settings) {
 
         $this->stdout("QUERY INSTAGRAM BY SUSER ID " . $userId . "\n\n");
 
@@ -151,7 +151,7 @@ class SocialController extends Controller
 
     }
 
-    private function queryInstagramByTag($userId, $tag, $settings) { 
+    private function queryInstagramByTag($userId, $tag, $settings) {
 
         $this->stdout("QUERY INSTAGRAM BY TAG " . $tag. "\n\n");
 
@@ -219,12 +219,12 @@ class SocialController extends Controller
         if(empty($apiSecret))
             throw new HttpException(500, "TWITTER_API_SECRET not found");
 
-        // create your OAuthToken 
+        // create your OAuthToken
         $token = new OAuthToken([
             'token' => $accessToken,
             'tokenSecret' => $accessTokenSecret
         ]);
- 
+
 
         if ($token == null)
             throw new HttpException(500, "No access token returned by Twitter");
@@ -234,11 +234,11 @@ class SocialController extends Controller
             'consumerKey' => $apiKey,
             'consumerSecret' => $apiSecret
         ]);
-        
+
 
         // Returns results with an ID greater than (
         $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Twitter'")->queryScalar();
-        
+
         $reqParams = [];
         if(!empty($username)) {
             // Fetch tweets of username
@@ -253,20 +253,20 @@ class SocialController extends Controller
             if ($fromUsername)
                  $q = urlencode("from:" . $fromUsername . " OR @" . $fromUsername);
 
-            if ($hashTag != null) {
+            if ($tag != null) {
                 if ($q != "") {
-                  $q .= urlencode(" AND #" . $hashTag);
+                  $q .= urlencode(" AND #" . $tag);
                 } else {
-                  $q .= urlencode("#" . $hashTag);
+                  $q .= urlencode("#" . $tag);
                 }
             }
             $reqParams['q'] = $q;
 
             // count=100&q=bubbletea from:toisondor_dijon @toisondor_dijon
             $request = "search/tweets.json";
-        }        
+        }
 
-       
+       $reqParams['count'] = 200;
 
         if ($sinceId != null)
             $reqParams['since_id'] = $sinceId;
