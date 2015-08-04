@@ -43,6 +43,11 @@ Returns all SocialPost entities without caching.
 Changelog
 ---------
 
+
+## 1.0.1.4-alpha, August 04, 2015
+
+- Updated markup for entry detail view.
+
 ## 1.0.1.3-alpha, July 8, 2015
 
 - Updated social command
