@@ -14,29 +14,29 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <div class="module-entry-detail-view">
 
-<div class="content-block-view">
+    <div class="content-block-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+        <h1><?= Html::encode($this->title) ?></h1>
 
-    <?= DetailView::widget([
-        'model' => $model,
-        'template' => '<div class="item row"><div class="two columns">{label}</div><div class="eight columns">{value}</div></div>',
-        'options' => [
+        <?= DetailView::widget([
+            'model' => $model,
+            'template' => '<div class="item"><div class="row"><div class="three columns item-label">{label}</div><div class="nine columns info">{value}</div></div></div>',
+            'options' => [
             'tag' => 'div',
             'class' => 'details-view'
-        ]
-    ]) ?>
+            ]
+            ]) ?>
 
-</div>
-</div>
+        </div>
+    </div>
 
-<script>
+    <script>
 
-    parent.mata.simpleTheme.header
-    .setBackToListViewURL("<?= sprintf("/mata-cms/%s/%s/list?SocialNetwork=%s", $this->context->module->id, $this->context->id, $model->SocialNetwork) ?>")
-    .setText('PREVIEW <?= Inflector::camel2words($model->SocialNetwork) ?> ENTRY: <?= $model->PublicationDate ?>')
-    .showBackToListView()
-    .hideVersions()
-    .show();
+        parent.mata.simpleTheme.header
+        .setBackToListViewURL("<?= sprintf("/mata-cms/%s/%s/list?SocialNetwork=%s", $this->context->module->id, $this->context->id, $model->SocialNetwork) ?>")
+        .setText('PREVIEW <?= Inflector::camel2words($model->SocialNetwork) ?> ENTRY: <?= $model->PublicationDate ?>')
+        .showBackToListView()
+        .hideVersions()
+        .show();
 
-</script>
+    </script>
