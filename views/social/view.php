@@ -18,8 +18,22 @@ $this->params['breadcrumbs'][] = $this->title;
 
         <h1><?= Html::encode($this->title) ?></h1>
 
+
         <?= DetailView::widget([
             'model' => $model,
+            'attributes' => [
+            'Author',
+            'Id',
+            [                    
+            'format' => 'html',
+            'label' => 'Media',
+            'value' => $model->Media ? Html::img($model->Media, ['class'=>'social-post-img']) : null
+            ],
+            'PublicationDate',
+            'SocialNetwork',
+            'Text',
+            'URI',
+            ],
             'template' => '<div class="item"><div class="row"><div class="three columns item-label">{label}</div><div class="nine columns info">{value}</div></div></div>',
             'options' => [
             'tag' => 'div',
