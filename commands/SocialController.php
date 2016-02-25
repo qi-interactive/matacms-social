@@ -12,6 +12,7 @@ use Yii;
 use yii\console\Controller;
 use yii\helpers\Console;
 use yii\helpers\Inflector;
+use yii\helpers\VarDumper;
 use matacms\settings\models\Setting;
 use yii\web\HttpException;
 use matacms\social\models\Social;
@@ -107,7 +108,7 @@ class SocialController extends Controller
 
     private function queryInstagramByUserId($userId, $settings) {
 
-        $this->stdout("QUERY INSTAGRAM BY SUSER ID " . $userId . "\n\n");
+        $this->stdout("QUERY INSTAGRAM BY USER ID " . $userId . "\n\n");
 
         $instagramClientId = Setting::findValue('INSTAGRAM_CLIENT_ID');
         if(empty($instagramClientId))
@@ -418,7 +419,7 @@ class SocialController extends Controller
 
                 if (isset($response['entities']['media'])) {
                     $mediaUrl = current($response['entities']['media']);
-                    $mediaUrl = $mediaUrl->media_url_https;
+                    $mediaUrl = $mediaUrl['media_url_https'];
                 }
 
 
