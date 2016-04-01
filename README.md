@@ -43,6 +43,10 @@ Returns all SocialPost entities without caching.
 Changelog
 ---------
 
+## 1.0.1.7-alpha, April 1, 2016
+
+- Updates for instagram api calls
+
 ## 1.0.1.6-alpha, February 25, 2016
 
 - Bugfix

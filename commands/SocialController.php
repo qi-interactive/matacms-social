@@ -120,7 +120,7 @@ class SocialController extends Controller
 
         if ($sinceId != null) {
             $this->stdout("SINCE Id: " . $sinceId . "\n");
-            $url .= "&min_id=" . $sinceId;
+            $url .= "&MIN_ID=" . $sinceId;
         }
 
         $response = file_get_contents($url);
@@ -166,7 +166,7 @@ class SocialController extends Controller
 
         if ($sinceId != null) {
             $this->stdout("SINCE Id: " . $sinceId . "\n");
-            $url .= "&max_tag_id=" . $sinceId;
+            $url .= "&MAX_TAG_ID=" . $sinceId;
         }
 
         $response = file_get_contents($url);
