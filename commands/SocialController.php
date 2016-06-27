@@ -14,6 +14,7 @@ use yii\helpers\Console;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use matacms\settings\models\Setting;
+use mata\keyvalue\models\KeyValue;
 use yii\web\HttpException;
 use matacms\social\models\Social;
 use matacms\social\models\SocialPost;
@@ -110,17 +111,19 @@ class SocialController extends Controller
 
         $this->stdout("QUERY INSTAGRAM BY USER ID " . $userId . "\n\n");
 
-        $instagramClientId = Setting::findValue('INSTAGRAM_CLIENT_ID');
-        if(empty($instagramClientId))
-            throw new HttpException(500, "INSTAGRAM_CLIENT_ID not found");
+        $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
+        if(empty($instagramAccessToken))
+            throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
 
-        $url = "https://api.instagram.com/v1/users/" . $userId . "/media/recent?client_id=" . $instagramClientId;
+
+        // THIS FUNCTIONALITY STILL DOESN'T WORK AS DOCUMENTATION AND API ARE NOT CORRECT, DO BE DONE AFTER INSTAGRAM SUPPORT RESPONSE
+        $url = "https://api.instagram.com/v1/users/" . $userId . "/media/recent?access_token=" . $instagramAccessToken;
 
         $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
 
         if ($sinceId != null) {
             $this->stdout("SINCE Id: " . $sinceId . "\n");
-            $url .= "&MIN_ID=" . $sinceId;
+            $url .= "&min_id=" . $sinceId;
         }
 
         $response = file_get_contents($url);
@@ -156,17 +159,17 @@ class SocialController extends Controller
 
         $this->stdout("QUERY INSTAGRAM BY TAG " . $tag. "\n\n");
 
-        $instagramClientId = Setting::findValue('INSTAGRAM_CLIENT_ID');
-        if(empty($instagramClientId))
-            throw new HttpException(500, "INSTAGRAM_CLIENT_ID not found");
+        $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
+        if(empty($instagramAccessToken))
+            throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
 
-        $url = "https://api.instagram.com/v1/tags/" . $tag . "/media/recent?client_id=" . $instagramClientId;
+        $url = "https://api.instagram.com/v1/tags/" . $tag . "/media/recent?access_token=" . $instagramAccessToken;
 
-        $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
+        $sinceId = Setting::findValue('INSTAGRAM_TAG_MIN_TAG_ID');
 
-        if ($sinceId != null) {
+        if (!empty($sinceId)) {
             $this->stdout("SINCE Id: " . $sinceId . "\n");
-            $url .= "&MAX_TAG_ID=" . $sinceId;
+            $url .= "&min_tag_id=" . $sinceId;
         }
 
         $response = file_get_contents($url);
@@ -186,13 +189,29 @@ class SocialController extends Controller
             $sc->attributes = [
                 "SocialNetwork" => SocialModule::INSTAGRAM,
                 "Id" => $instagram->id,
-                "DateCreated" => date("Y-m-d H:i:s", strtotime($instagram->created_time)),
+                "DateCreated" => date("Y-m-d H:i:s", $instagram->created_time),
                 "Response" => serialize($instagram),
                 ];
 
             if ($sc->save() == false) {
                 throw new HttpException(500, "Could not save Social: " . \yii\helpers\VarDumper::dumpAsString($sc->getErrors()));
             }
+        }
+
+        if(isset($response->pagination) && isset($response->pagination->min_tag_id)) {
+
+            $kv = KeyValue::findByKey('INSTAGRAM_TAG_MIN_TAG_ID');
+
+            if ($kv == null)
+                $kv = new KeyValue;
+
+            $kv->attributes = [
+                "Key" => 'INSTAGRAM_TAG_MIN_TAG_ID',
+                "Value" => $response->pagination->min_tag_id
+            ];
+
+            if ($kv->save() == false)
+                throw new \yii\web\ServerErrorHttpException($kv->getTopError());
         }
     }
 
