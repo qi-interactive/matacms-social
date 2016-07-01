@@ -63,7 +63,7 @@ class SocialController extends Controller
                     $params = json_decode($value);
 
                     // check for mandatory fields
-                    if (!isset($params->userId) && !isset($params->tag))
+                    if (!isset($params->username) && !isset($params->tag))
                         throw new HttpException(500, "Missing mandatory params from social value");
 
                     $this->queryInstagram($params, $value);
@@ -95,14 +95,14 @@ class SocialController extends Controller
 
     private function queryInstagram($params, $creepSettings) {
 
-        $userId = isset($params->userId) ? $params->userId : null;
+        $username = isset($params->username) ? $params->username : null;
         $tag = isset($params->tag) ? $params->tag : null;
 
-        if ($userId && !$tag)
-            $this->queryInstagramByUserId($userId, $creepSettings);
+        if ($username && !$tag)
+            $this->queryInstagramByUsername($username, $creepSettings);
 
         if ($tag)
-            $this->queryInstagramByTag($userId, $tag, $creepSettings);
+            $this->queryInstagramByUsernameAndTag($username, $tag, $creepSettings);
     }
 
 
@@ -129,6 +129,52 @@ class SocialController extends Controller
         $this->stdout("URL " . $url . "\n");
 
         foreach ($response->data as $instagram) {
+
+            $existing = Social::find()->where(["Id" => $instagram->id])->one();
+
+            if ($existing != null)
+                continue;
+
+            $this->stdout("Instagram ID " . $instagram->id . "\n");
+
+            $sc = new Social();
+            $sc->attributes = [
+                "SocialNetwork" => SocialModule::INSTAGRAM,
+                "Id" => $instagram->id,
+                "DateCreated" => date('Y-m-d H:i:s', $instagram->created_time),
+                "Response" => serialize($instagram)
+                ];
+
+            if ($sc->save() == false) {
+                throw new HttpException(500, "Could not save Social: " . \yii\helpers\VarDumper::dumpAsString($sc->getErrors()));
+            }
+        }
+
+    }
+
+    private function queryInstagramByUsername($username, $settings) {
+
+        $this->stdout("QUERY INSTAGRAM BY USER NAME " . $username . "\n\n");
+
+        // $instagramClientId = Setting::findValue('INSTAGRAM_CLIENT_ID');
+        // if(empty($instagramClientId))
+        //     throw new HttpException(500, "INSTAGRAM_CLIENT_ID not found");
+
+        $url = "https://www.instagram.com/" . $username . "/media/";
+
+        $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
+
+        if ($sinceId != null) {
+            $this->stdout("SINCE Id: " . $sinceId . "\n");
+            $url .= "?min_id=" . $sinceId;
+        }
+
+        $response = file_get_contents($url);
+        $response = json_decode($response);
+
+        $this->stdout("URL " . $url . "\n");
+
+        foreach ($response->items as $instagram) {
 
             $existing = Social::find()->where(["Id" => $instagram->id])->one();
 
@@ -187,6 +233,46 @@ class SocialController extends Controller
                 "SocialNetwork" => SocialModule::INSTAGRAM,
                 "Id" => $instagram->id,
                 "DateCreated" => date("Y-m-d H:i:s", strtotime($instagram->created_time)),
+                "Response" => serialize($instagram),
+                ];
+
+            if ($sc->save() == false) {
+                throw new HttpException(500, "Could not save Social: " . \yii\helpers\VarDumper::dumpAsString($sc->getErrors()));
+            }
+        }
+    }
+
+    private function queryInstagramByUsernameAndTag($username, $tag, $settings) {
+
+        $this->stdout("QUERY INSTAGRAM BY USER NAME " . $username . " AND TAG " . $tag. "\n\n");
+
+        $url = "https://www.instagram.com/" . $username . "/media/";
+
+        $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
+
+        if ($sinceId != null) {
+            $this->stdout("SINCE Id: " . $sinceId . "\n");
+            $url .= "?min_id=" . $sinceId;
+        }
+
+        $response = file_get_contents($url);
+        $response = json_decode($response);
+
+        foreach ($response->items as $instagram) {
+
+            if (strpos($instagram->caption->text, '#' . $tag) == false || (isset($username) && mb_strtolower($instagram->user->username) != mb_strtolower($username)))
+                continue;
+
+            $existing = Social::find()->where(["Id" => $instagram->id])->one();
+
+            if ($existing != null)
+                continue;
+
+            $sc = new Social();
+            $sc->attributes = [
+                "SocialNetwork" => SocialModule::INSTAGRAM,
+                "Id" => $instagram->id,
+                "DateCreated" => date("Y-m-d H:i:s", $instagram->created_time),
                 "Response" => serialize($instagram),
                 ];
 
