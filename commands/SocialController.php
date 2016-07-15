@@ -201,67 +201,6 @@ class SocialController extends Controller
 
     }
 
-    private function queryInstagramByTag($userId, $tag, $settings) {
-
-        $this->stdout("QUERY INSTAGRAM BY TAG " . $tag. "\n\n");
-
-        $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
-
-        if(empty($instagramAccessToken))
-            throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
-
-        $url = "https://api.instagram.com/v1/tags/" . $tag . "/media/recent?access_token=" . $instagramAccessToken;
-
-        $sinceId = Setting::findValue('INSTAGRAM_TAG_MIN_TAG_ID');
-
-        if (!empty($sinceId)) {
-            $this->stdout("SINCE Id: " . $sinceId . "\n");
-            $url .= "&min_tag_id=" . $sinceId;
-        }
-
-        $response = file_get_contents($url);
-        $response = json_decode($response);
-
-        foreach ($response->data as $instagram) {
-
-            if (in_array($tag, $instagram->tags) == false || (isset($userId) && $instagram->user->id != $userId))
-                continue;
-
-            $existing = Social::find()->where(["Id" => $instagram->id])->one();
-
-            if ($existing != null)
-                continue;
-
-            $sc = new Social();
-            $sc->attributes = [
-                "SocialNetwork" => SocialModule::INSTAGRAM,
-                "Id" => $instagram->id,
-                "DateCreated" => date("Y-m-d H:i:s", $instagram->created_time),
-                "Response" => serialize($instagram),
-                ];
-
-            if ($sc->save() == false) {
-                throw new HttpException(500, "Could not save Social: " . \yii\helpers\VarDumper::dumpAsString($sc->getErrors()));
-            }
-        }
-
-        if(isset($response->pagination) && isset($response->pagination->next_min_id)) {
-
-            $kv = KeyValue::findByKey('INSTAGRAM_TAG_MIN_TAG_ID');
-
-            if ($kv == null)
-                $kv = new KeyValue;
-
-            $kv->attributes = [
-                "Key" => 'INSTAGRAM_TAG_MIN_TAG_ID',
-                "Value" => $response->pagination->next_min_id
-            ];
-
-            if ($kv->save() == false)
-                throw new \yii\web\ServerErrorHttpException($kv->getTopError());
-        }
-    }
-
     private function queryInstagramByUsernameAndTag($username, $tag, $settings) {
 
         $this->stdout("QUERY INSTAGRAM BY USER NAME " . $username . " AND TAG " . $tag. "\n\n");
