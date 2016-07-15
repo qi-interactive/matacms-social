@@ -158,11 +158,12 @@ class SocialController extends Controller
 
         $this->stdout("QUERY INSTAGRAM BY USER NAME " . $username . "\n\n");
 
-        // $instagramClientId = Setting::findValue('INSTAGRAM_CLIENT_ID');
-        // if(empty($instagramClientId))
-        //     throw new HttpException(500, "INSTAGRAM_CLIENT_ID not found");
+        $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
 
-        $url = "https://www.instagram.com/" . $username . "/media/";
+        if(empty($instagramAccessToken))
+            throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
+
+        $url = "https://api.instagram.com/v1/users/" . $username . "/media/recent?access_token=" . $instagramAccessToken;
 
         $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
 
@@ -265,21 +266,26 @@ class SocialController extends Controller
 
         $this->stdout("QUERY INSTAGRAM BY USER NAME " . $username . " AND TAG " . $tag. "\n\n");
 
-        $url = "https://www.instagram.com/" . $username . "/media/";
+        $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
 
-        $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
+        if(empty($instagramAccessToken))
+            throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
 
-        if ($sinceId != null) {
+        $url = "https://api.instagram.com/v1/tags/" . $tag . "/media/recent?access_token=" . $instagramAccessToken;
+
+        $sinceId = Setting::findValue('INSTAGRAM_TAG_MIN_TAG_ID');
+
+        if (!empty($sinceId)) {
             $this->stdout("SINCE Id: " . $sinceId . "\n");
-            $url .= "?min_id=" . $sinceId;
+            $url .= "&min_tag_id=" . $sinceId;
         }
 
         $response = file_get_contents($url);
         $response = json_decode($response);
 
-        foreach ($response->items as $instagram) {
+        foreach ($response->data as $instagram) {
 
-            if (strpos($instagram->caption->text, '#' . $tag) == false || (isset($username) && mb_strtolower($instagram->user->username) != mb_strtolower($username)))
+            if ($instagram->caption == null || in_array($tag, $instagram->tags) == false  || (isset($username) && mb_strtolower($instagram->user->username) != mb_strtolower($username)))
                 continue;
 
             $existing = Social::find()->where(["Id" => $instagram->id])->one();
@@ -298,6 +304,22 @@ class SocialController extends Controller
             if ($sc->save() == false) {
                 throw new HttpException(500, "Could not save Social: " . \yii\helpers\VarDumper::dumpAsString($sc->getErrors()));
             }
+        }
+
+        if(isset($response->pagination) && isset($response->pagination->next_min_id)) {
+
+            $kv = KeyValue::findByKey('INSTAGRAM_TAG_MIN_TAG_ID');
+
+            if ($kv == null)
+                $kv = new KeyValue;
+
+            $kv->attributes = [
+                "Key" => 'INSTAGRAM_TAG_MIN_TAG_ID',
+                "Value" => $response->pagination->next_min_id
+            ];
+
+            if ($kv->save() == false)
+                throw new \yii\web\ServerErrorHttpException($kv->getTopError());
         }
     }
 
