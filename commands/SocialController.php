@@ -112,11 +112,10 @@ class SocialController extends Controller
         $this->stdout("QUERY INSTAGRAM BY USER ID " . $userId . "\n\n");
 
         $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
+
         if(empty($instagramAccessToken))
             throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
 
-
-        // THIS FUNCTIONALITY STILL DOESN'T WORK AS DOCUMENTATION AND API ARE NOT CORRECT, DO BE DONE AFTER INSTAGRAM SUPPORT RESPONSE
         $url = "https://api.instagram.com/v1/users/" . $userId . "/media/recent?access_token=" . $instagramAccessToken;
 
         $sinceId = Yii::$app->db->createCommand("select MAX(Id) from matacms_social where SocialNetwork = 'Instagram'")->queryScalar();
@@ -160,6 +159,7 @@ class SocialController extends Controller
         $this->stdout("QUERY INSTAGRAM BY TAG " . $tag. "\n\n");
 
         $instagramAccessToken = Setting::findValue('INSTAGRAM_ACCESS_TOKEN');
+
         if(empty($instagramAccessToken))
             throw new HttpException(500, "INSTAGRAM_ACCESS_TOKEN not found");
 
@@ -198,7 +198,7 @@ class SocialController extends Controller
             }
         }
 
-        if(isset($response->pagination) && isset($response->pagination->min_tag_id)) {
+        if(isset($response->pagination) && isset($response->pagination->next_min_id)) {
 
             $kv = KeyValue::findByKey('INSTAGRAM_TAG_MIN_TAG_ID');
 
@@ -207,7 +207,7 @@ class SocialController extends Controller
 
             $kv->attributes = [
                 "Key" => 'INSTAGRAM_TAG_MIN_TAG_ID',
-                "Value" => $response->pagination->min_tag_id
+                "Value" => $response->pagination->next_min_id
             ];
 
             if ($kv->save() == false)
@@ -244,7 +244,6 @@ class SocialController extends Controller
             'token' => $accessToken,
             'tokenSecret' => $accessTokenSecret
         ]);
-
 
         if ($token == null)
             throw new HttpException(500, "No access token returned by Twitter");
