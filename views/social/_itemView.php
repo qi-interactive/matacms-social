@@ -22,7 +22,7 @@ $module = \Yii::$app->getModule("environment");
 		<?php } else { 
 			$thumbnailActiveClass = " ";
 	} ?>
-	<a href='<?= sprintf("%s/view?id=%s", $moduleBaseUrl, $model->primaryKey );?>' class="list-link">
+	<a href='<?= sprintf("%s/update?id=%s", $moduleBaseUrl, $model->primaryKey );?>' class="list-link">
 		<div class="list-contents-container <?= $thumbnailActiveClass ?>">
 			<div class="list-label"> 
 				<span class='item-label'><?= $model->getLabel();?></span> </div>
